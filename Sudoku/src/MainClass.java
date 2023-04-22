@@ -5,7 +5,7 @@ public class MainClass {
         Sudoku test = new Sudoku();
         test.read_data();
         test.solve_sudoku();
-        test.results();
+        test.printSudoku();
     }
 
 

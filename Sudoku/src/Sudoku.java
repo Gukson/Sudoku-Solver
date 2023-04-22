@@ -8,32 +8,67 @@ import java.util.Scanner;
 
 public class Sudoku{
 
-    private ArrayList<ArrayList<Integer>> sudoku;
+    private ArrayList<ArrayList<Area>> sudoku;
     private String filename;
     private HashSet<Integer> square;
     private HashSet<Integer> row;
     private HashSet<Integer> column;
 
 
-    public void solve_sudoku(){
+    public void solve_sudoku() {
         square = new HashSet<Integer>();
         row = new HashSet<Integer>();
         column = new HashSet<Integer>();
         int solved = 0;
-        while (solved < 81){
+        while(solved < 81){
             solved = 0;
-            for(int y = 0; y < sudoku.size(); y++){
-                for(int x = 0; x<sudoku.get(y).size(); x++){
-                    if(sudoku.get(y).get(x) == 0){
+            for(int y = 0;y<9;y++){
+                for(int x = 0; x<9;x++){
+                    Area tempArea = sudoku.get(y).get(x);
+                    if(tempArea.value == 0){
+                        System.out.println("znaleziono puste pole" );
                         generateSquare(x,y);
-                        generateRow(y);
                         generateColumn(x);
-
-                    }else solved++;
+                        generateRow(y);
+                        tempArea.potencialValue.removeAll(square);
+                        tempArea.potencialValue.removeAll(column);
+                        tempArea.potencialValue.removeAll(row);
+                        if(tempArea.potencialValue.size() == 1){
+                            for(int element: tempArea.potencialValue)tempArea.value = element;
+                            System.out.println("Wstawiono wartosc");
+                            solved++;
+                            System.out.println(solved);
+                            removeFromPotencialInColumn(x, tempArea.value);
+                            removeFromPotencialInRow(y, tempArea.value);
+                            removeFromPotencialInsquare(x,y, tempArea.value);
+                        }
+                    }
+                    else solved++;
                 }
             }
             System.out.println(solved);
-            System.out.println("lecimy od nowa");
+        }
+
+    }
+
+    private void removeFromPotencialInRow(int y, int value){
+        for(Area object: sudoku.get(y)){
+            if(object.value == 0)object.potencialValue.remove(value);
+
+        }
+    }
+    private void removeFromPotencialInColumn(int x, int value){
+        for(int y = 0; y< sudoku.size(); y++){
+            if(sudoku.get(y).get(x).value == 0)sudoku.get(y).get(x).potencialValue.remove(value);
+        }
+    }
+    private void removeFromPotencialInsquare(int x,int y,int value){
+        int xmid = x/3;
+        int ymid = y/3;
+        for(int z = ymid*3; z<(ymid+1)*3;z++){
+            for(int c = xmid*3; c < (xmid+1)*3; c++){
+                if(sudoku.get(y).get(x).value == 0)sudoku.get(y).get(x).potencialValue.remove(value);
+            }
         }
     }
 
@@ -43,7 +78,7 @@ public class Sudoku{
         int ymid = y/3;
         for(int z = ymid*3; z<(ymid+1)*3;z++){
             for(int c = xmid*3; c < (xmid+1)*3; c++){
-                square.add(sudoku.get(z).get(c));
+                square.add(sudoku.get(z).get(c).value);
             }
         }
         square.remove(0);
@@ -52,7 +87,7 @@ public class Sudoku{
     private void generateColumn(int x){
         column.clear();
         for(int y = 0; y< sudoku.size(); y++){
-            column.add(sudoku.get(y).get(x));
+            column.add(sudoku.get(y).get(x).value);
         }
         column.remove(0);
     }
@@ -60,7 +95,7 @@ public class Sudoku{
     private void generateRow(int y){
         row.clear();
         for(int x = 0; x< sudoku.get(y).size(); x++){
-            row.add(sudoku.get(y).get(x));
+            row.add(sudoku.get(y).get(x).value);
         }
         row.remove(0);
     }
@@ -76,9 +111,9 @@ public class Sudoku{
     public void results()  {
         try {
             BufferedWriter writer = new BufferedWriter(new FileWriter(filename.replace(".txt", "_out.txt")));
-            for (ArrayList<Integer> integers : sudoku) {
-                for (Integer integer : integers) {
-                    writer.write(integer);
+            for (ArrayList<Area> column : sudoku) {
+                for (Area row : column) {
+                    writer.write(row.value);
                 }
                 writer.newLine();
             }
@@ -90,9 +125,18 @@ public class Sudoku{
         };
     }
 
+    public void printSudoku(){
+        for(ArrayList<Area> column: sudoku){
+            for (Area row: column){
+                System.out.print(row.value);
+            }
+            System.out.println();
+        }
+    }
+
 
     public void read_data(){
-        sudoku = new ArrayList<ArrayList<Integer>>();
+        sudoku = new ArrayList<ArrayList<Area>>();
         Scanner userInterface = new Scanner(System.in);
         System.out.println("NameFile: ");
         filename = userInterface.next() + ".txt";
@@ -100,10 +144,10 @@ public class Sudoku{
             File myObj = new File(filename);
             Scanner myReader = new Scanner(myObj);
             while(myReader.hasNextLine()){
-                ArrayList<Integer> inner = new ArrayList<Integer>();
+                ArrayList<Area> inner = new ArrayList<Area>();
                 String str = myReader.nextLine();
                 String[] strsplitted = str.split("");
-                for(String s: strsplitted) inner.add(Integer.parseInt(s));
+                for(String s: strsplitted) inner.add(new Area(Integer.parseInt(s)));
                 sudoku.add(inner);
             }
             myReader.close();
