@@ -26,22 +26,7 @@ public class Sudoku{
                 for(int x = 0; x<9;x++){
                     Area tempArea = sudoku.get(y).get(x);
                     if(tempArea.value == 0){
-                        System.out.println("znaleziono puste pole" );
-                        generateSquare(x,y);
-                        generateColumn(x);
-                        generateRow(y);
-                        tempArea.potencialValue.removeAll(square);
-                        tempArea.potencialValue.removeAll(column);
-                        tempArea.potencialValue.removeAll(row);
-                        if(tempArea.potencialValue.size() == 1){
-                            for(int element: tempArea.potencialValue)tempArea.value = element;
-                            System.out.println("Wstawiono wartosc");
-                            solved++;
-                            System.out.println(solved);
-                            removeFromPotencialInColumn(x, tempArea.value);
-                            removeFromPotencialInRow(y, tempArea.value);
-                            removeFromPotencialInsquare(x,y, tempArea.value);
-                        }
+                        blankArea(tempArea,x,y,solved);
                     }
                     else solved++;
                 }
@@ -49,6 +34,37 @@ public class Sudoku{
             System.out.println(solved);
         }
 
+    }
+
+    private void blankArea(Area tempArea, int x, int y, int solved){
+        System.out.println("znaleziono puste pole" );
+        generateSquare(x,y);
+        generateColumn(x);
+        generateRow(y);
+        tempArea.potencialValue.removeAll(square);
+        tempArea.potencialValue.removeAll(column);
+        tempArea.potencialValue.removeAll(row);
+        if(tempArea.potencialValue.size() == 1){
+            for(int element: tempArea.potencialValue)tempArea.value = element;
+            System.out.println("Wstawiono wartosc");
+            solved++;
+            System.out.println(solved);
+            removeFromPotencialInColumn(x, tempArea.value);
+            removeFromPotencialInRow(y, tempArea.value);
+            removeFromPotencialInsquare(x,y, tempArea.value);
+        }
+    }
+
+    private void checkRow(int y){
+        for(Area x:sudoku.get(y)){
+            for(Area z:sudoku.get(y)){
+                if(z != x && z.value == 0 && x.value == 0){
+                    HashSet<Integer> temp = x.potencialValue;
+                    temp.removeAll(z.potencialValue);
+                    if(temp.size() == 1) for(int element: temp)x.value = element;
+                }
+            }
+        }
     }
 
     private void removeFromPotencialInRow(int y, int value){
@@ -100,7 +116,7 @@ public class Sudoku{
         row.remove(0);
     }
 
-    private List availabe_numbers(HashSet object){
+    private List<Integer> availabe_numbers(HashSet object){
         List<Integer> output = new ArrayList<>();
         for(int x = 1; x<= 9 ; x++){
             if(!object.contains(x))output.add(x);
